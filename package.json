@@ -5,12 +5,14 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "nodemon server.js",
+    "dev": "concurrently --kill-others-on-fail \"npm start\" \"npm run client\"",
+    "client": "cd react-app && npm start"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "concurrently": "^4.1.0",
     "nodemon": "^1.18.8"
   },
   "dependencies": {

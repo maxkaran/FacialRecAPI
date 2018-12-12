@@ -5,7 +5,7 @@ const db             = require('./config/db');
 
 const app            = express();
 
-const port = 3000;
+const port = process.env.PORT || 5000;
 
 //to handle url encoded content
 app.use(bodyParser.urlencoded({ extended: true }));

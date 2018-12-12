@@ -1,6 +1,13 @@
 module.exports = function(app, db){
-    app.get('/notes', function(req, res){
-        // You'll create your note here.
-        res.send('Hello');
+    app.post('api/createuser', function(req, res){
+        const user = { uid : req.body.uid, fname : req.body.fname, lname : req.body.lname, email : req.body.email }
+        db.collection('users').insert(user, function(err, result){
+            console.log(user);
+            if (err) { 
+                res.send({ 'error': 'true' }); 
+            } else {
+                res.send(result);
+            }
+          });
     });
 }

@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import "./Login.css";
 
 export default class Login extends Component {
@@ -33,13 +35,31 @@ export default class Login extends Component {
         });
     }
 
-    handleSubmit = event => {
-        event.preventDefault();
-    }
+    handleSubmit = async e => {
+        e.preventDefault();
+        const response = await fetch('/api/createuser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(this.state),
+        });
+
+        const body = await response.text();
+        const bodyJSON = JSON.parse(body);
+        
+        //now handle response so user knows if account was created
+        if(bodyJSON.error == null){ //if no error from API
+            toast("Succesfully created account!");
+        }else{
+            toast(bodyJSON.error);
+        }
+      };
 
     render() {
         return (
         <div className="Login">
+            <ToastContainer />
             <form onSubmit={this.handleSubmit}>
             <FormGroup controlId="email" bsSize="large">
                 <ControlLabel>Email</ControlLabel>

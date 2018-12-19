@@ -3,7 +3,7 @@ module.exports = function(app, db){
     app.post('/api/createuser', function(req, res){
         new_uid = Date.now(); //user ID is just current time, since we have no risk of user accounts being created at the same time
 
-        const user = { 
+        const user = { //create user var for the database
             uid : new_uid, 
             fname : req.body.firstname, 
             lname : req.body.lastname, 
@@ -11,6 +11,7 @@ module.exports = function(app, db){
             password : req.body.password 
         };
 
+        //check the fields and return errors if invalid
         if(user.uid == null)
             return res.send({'error' : 'Error creating user'});
         else if(user.fname == null)
@@ -22,7 +23,7 @@ module.exports = function(app, db){
         else if(user.password == null)
             return res.send({'error' : 'Password is required'});
 
-        if(db.collection('users').findOne({email : user.email}, function(err,result){
+        if(db.collection('users').findOne({email : user.email}, function(err,result){ //check if email is in use
             if(result != null)
                 res.send({'error' : 'Email is already in use'});
             else{ //if email is not in database, insert user
@@ -31,7 +32,7 @@ module.exports = function(app, db){
                         res.send({ 'error': JSON.stringify(err) }); 
                     } else {
                         console.log("new user: "+new_uid);
-                        res.send({ 'result' : JSON.stringify(result) });
+                        res.send({ 'result' : JSON.stringify(result) }); //send back result on success
                     }
                   });
             }
@@ -39,20 +40,20 @@ module.exports = function(app, db){
     }); 
 
     //_____________________________________________Get User Info_______________________________________________
-    app.post('/api/getuser', function(req,res){
+    app.post('/api/getuser', function(req,res){ //with email and password for authenticationk
         const auth = {password : req.body.password, email : req.body.email};
         
-        if(auth.password == null || auth.email == null){
+        if(auth.password == null || auth.email == null){ //make sure both are present
             return res.send({error : 'password and email are required to authenticate'});
         }
 
         db.collection('users').findOne({email : auth.email}, function(err, result){
-            if(result == null){
+            if(result == null){ //check if email is actually in the databse
                 res.send({error : 'No account with this email'});
-            }else{
+            }else{ //make sure password is correct
                 if(auth.password == result.password){
                     console.log('Authenticated!');
-                    res.send(result);
+                    res.send(result); //send user data if authenticated properly
                 }
             }
         });

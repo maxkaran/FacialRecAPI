@@ -1,7 +1,7 @@
 //Class for a users account
-
 class Profile {
     constructor() {
+        //the class uses session storage so that data persists when user refreshes
         this.state = {
             authenticated : JSON.parse(sessionStorage.getItem('authenticated')) || null,
             uid: sessionStorage.getItem('uid') || null,
@@ -11,6 +11,7 @@ class Profile {
             password: sessionStorage.getItem('password') || null,
         };
 
+        //expose functions
         this.signIn = this.signIn.bind(this);
         this.getName = this.getName.bind(this);
     }
@@ -27,8 +28,8 @@ class Profile {
         return this.state.authenticated;
     }
   
-    async signIn(email, password){
-        const response = await fetch('/api/getuser', {
+    async signIn(email, password){ //sign in a user
+        const response = await fetch('/api/getuser', { //call backend api for user authentication
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -38,7 +39,7 @@ class Profile {
 
           const result = JSON.parse(await response.text());
 
-            if(result.error == null){
+            if(result.error == null){ //if no error, modify state of profile class
                 this.state.authenticated = true;
                 this.state.uid = result.uid;
                 this.state.email = result.email;
@@ -46,6 +47,7 @@ class Profile {
                 this.state.lastname = result.lname;
                 this.state.password = result.password;
                 
+                //save in session storage
                 sessionStorage.setItem('authenticated', JSON.stringify(this.state.authenticated));
                 sessionStorage.setItem('uid', JSON.stringify(this.state.uid));
                 sessionStorage.setItem('email', JSON.stringify(this.state.email));
@@ -58,7 +60,7 @@ class Profile {
     }
   
   
-    signOut() {
+    signOut() { //clear profile state on sign out
         console.log('Sign out!');
         this.state.authenticated = false;
         this.state.uid = null;
@@ -67,6 +69,7 @@ class Profile {
         this.state.lastname = null;
         this.state.password = null;
         
+        //remove data from session storage
         sessionStorage.removeItem('authenticated');
         sessionStorage.removeItem('uid');
         sessionStorage.removeItem('email');

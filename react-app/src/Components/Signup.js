@@ -1,3 +1,5 @@
+//Component for signup form
+
 import React, { Component } from "react";
 import { Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import { ToastContainer, toast } from 'react-toastify';
@@ -17,7 +19,7 @@ export default class Login extends Component {
         };
     }
 
-    validateForm() {
+    validateForm() { //make sure all fields are correct
         return this.state.email.length > 0 && this.state.password.length > 0 && this.state.firstname.length > 0 && this.state.lastname.length > 0 &&
             this.state.password==this.state.passwordrepeated;
     }
@@ -35,9 +37,9 @@ export default class Login extends Component {
         });
     }
 
-    handleSubmit = async e => {
+    handleSubmit = async e => { //on form submission
         e.preventDefault();
-        const response = await fetch('/api/createuser', {
+        const response = await fetch('/api/createuser', { //call API to create user
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -53,7 +55,7 @@ export default class Login extends Component {
             //this.props.history.push('/')
             toast("Succesfully created account!");
         }else{
-            toast(bodyJSON.error);
+            toast(bodyJSON.error); //display error to user
         }
       };
 

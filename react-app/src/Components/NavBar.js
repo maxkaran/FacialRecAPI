@@ -12,6 +12,7 @@ function NavBar() {
             </Link>
             
             {
+                //if user is not logged in
                 !profile.loggedIn() &&
                 <Nav pullRight>
                     <NavItem class="NavItem" href="/signup">Signup</NavItem>
@@ -19,6 +20,7 @@ function NavBar() {
                 </Nav>        
             }
             {
+                //if user is logged in
                 profile.loggedIn() &&
                 <div>
                     <label className="mr-2 text-white">{profile.getName()}</label>

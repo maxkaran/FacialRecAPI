@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import "./Login.css";
+import profile from '../Profile';
 
 export default class Login extends Component {
   constructor(props) {
@@ -22,8 +23,10 @@ export default class Login extends Component {
     });
   }
 
-  handleSubmit = event => {
+  handleSubmit = async event => {
     event.preventDefault();
+    await profile.signIn(this.state.email, this.state.password);
+    this.props.history.push('/account')
   }
 
   render() {

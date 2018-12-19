@@ -50,6 +50,7 @@ export default class Login extends Component {
         
         //now handle response so user knows if account was created
         if(bodyJSON.error == null){ //if no error from API
+            //this.props.history.push('/')
             toast("Succesfully created account!");
         }else{
             toast(bodyJSON.error);

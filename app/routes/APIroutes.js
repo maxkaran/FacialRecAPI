@@ -3,7 +3,13 @@ module.exports = function(app, db){
     app.post('/api/createuser', function(req, res){
         new_uid = Date.now(); //user ID is just current time, since we have no risk of user accounts being created at the same time
 
-        const user = { uid : new_uid, fname : req.body.firstname, lname : req.body.lastname, email : req.body.email, password : req.body.password }
+        const user = { 
+            uid : new_uid, 
+            fname : req.body.firstname, 
+            lname : req.body.lastname, 
+            email : req.body.email, 
+            password : req.body.password 
+        };
 
         if(user.uid == null)
             return res.send({'error' : 'Error creating user'});
@@ -29,12 +35,27 @@ module.exports = function(app, db){
                     }
                   });
             }
-        })); //do not allow duplicate emails
-            
-        
-
-        
+        })); //do not allow duplicate emails        
     }); 
 
-    //_____________________________________________
+    //_____________________________________________Get User Info_______________________________________________
+    app.post('/api/getuser', function(req,res){
+        const auth = {password : req.body.password, email : req.body.email};
+        
+        if(auth.password == null || auth.email == null){
+            return res.send({error : 'password and email are required to authenticate'});
+        }
+
+        db.collection('users').findOne({email : auth.email}, function(err, result){
+            if(result == null){
+                res.send({error : 'No account with this email'});
+            }else{
+                if(auth.password == result.password){
+                    console.log('Authenticated!');
+                    res.send(result);
+                }
+            }
+        });
+
+    });
 }

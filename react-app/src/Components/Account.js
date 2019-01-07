@@ -37,19 +37,33 @@ export default class Account extends Component {
         <div className="row">
             {!this.state.faces && <p>Loading Faces...</p>}
             {
-            this.state.faces && this.state.faces.map(faces => (
-                <div key={faces.fid} className="col-sm-12 col-md-4 col-lg-3">
-                <Link to={`/faces/${faces.fid}`}>
+                // To add a new face
+                this.state.faces && <div className="col-sm-12 col-md-4 col-lg-3">
+                <Link to={`/addnewface`}>
                     <div className="card text-white bg-success mb-3">
-                    <div className="card-header">Answers: {faces.email}</div>
+                    <div className="card-header">Add a face</div>
                     <div className="card-body">
-                        <h4 className="card-title">{faces.fname}</h4>
-                        <p className="card-text">{faces.lname}</p>
+                        <h4 className="card-title">Give someone's face access to your lock!</h4>
                     </div>
                     </div>
                 </Link>
                 </div>
-            ))
+            }
+            {
+
+                this.state.faces && this.state.faces.map(faces => (
+                    <div key={faces.fid} className="col-sm-12 col-md-4 col-lg-3">
+                    <Link to={`/faces/${faces.fid}`}>
+                        <div className="card text-white bg-success mb-3">
+                        <div className="card-header">{faces.email}</div>
+                        <div className="card-body">
+                            <h4 className="card-title">{faces.fname}</h4>
+                            <p className="card-text">{faces.lname}</p>
+                        </div>
+                        </div>
+                    </Link>
+                    </div>
+                ))
             }
         </div>
         </div>

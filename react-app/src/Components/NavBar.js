@@ -7,10 +7,8 @@ import './NavBar.css'
 function NavBar() {
     return (
         <nav className="navbar navbar-dark bg-primary fixed-top">
-            <Link className="navbar-brand" to="/">
-                Welcome!
-            </Link>
-            
+            {!profile.loggedIn() && <Link className="navbar-brand" to="/">Welcome!</Link>}
+            {profile.loggedIn() && <Link className="navbar-brand" to="/account">My Account</Link>}
             {
                 //if user is not logged in
                 !profile.loggedIn() &&

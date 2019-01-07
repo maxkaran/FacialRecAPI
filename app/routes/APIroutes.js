@@ -89,7 +89,7 @@ module.exports = function(app, db){
     
             if(db.collection('users').findOne({email : face.email}, function(err,result){ //find user
                 if(result == null)
-                    res.send({'error' : 'This account does not exist'});
+                    res.send({error : 'This account does not exist'});
                 else if(result.password != face.password){ //check if password matches
                     res.send({error : 'Password incorrect'});
                 }else{

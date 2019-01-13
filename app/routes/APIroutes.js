@@ -1,4 +1,19 @@
 module.exports = function(app, db){
+
+    const path = require('path');
+    const fs = require('fs');
+    const multer = require('multer');
+    const storage = multer.diskStorage({
+        destination: (req, file, cb) => {
+          cb(null, __dirname+'/../../uploads/');
+        },
+        filename: (req, file, cb) => {
+          const newFilename = `${Date.now()}${path.extname(file.originalname)}`;
+          cb(null, newFilename);
+        }
+    });
+    const upload = multer({ storage});
+
     //______________________________________________CREATE USER________________________________________________
     app.post('/api/createuser', function(req, res){
         new_uid = Date.now(); //user ID is just current time, since we have no risk of user accounts being created at the same time
@@ -60,50 +75,64 @@ module.exports = function(app, db){
 
     });
 
-        //______________________________________________Create Faces (Authorized Entrants for lock)___________________________________
-        app.post('/api/createface', function(req, res){
-            new_fid = Date.now(); //face ID is just current time, since we have no risk of user accounts being created at the same time
-    
-            const face = { //create face var for the database
-                fid : new_fid, 
-                email : req.body.email, //account this face is associated with
-                password : req.body.password,
-                fname : req.body.firstname, //name of new face
-                lname : req.body.lastname,
-                fullaccess : req.body.fullaccess //does face have unlimited access or is it timed
-            };
-    
-            //check the fields and return errors if invalid
-            if(face.fid == null)
-                return res.send({'error' : 'Error creating face'});
-            else if(face.email == null)
-                return res.send({'error' : 'email is required'});
-            else if(face.password == null)
-                return res.send({'error' : 'password is required'});
-            else if(face.fname == null)
-                return res.send({'error' : 'First name is required'});
-            else if(face.lname == null)
-                return res.send({'error' : 'Last name is required'});
-            else if(face.fullaccess == null)
-                return res.send({'error' : 'Access Type is required'});
-    
-            if(db.collection('users').findOne({email : face.email}, function(err,result){ //find user
-                if(result == null)
-                    res.send({error : 'This account does not exist'});
-                else if(result.password != face.password){ //check if password matches
-                    res.send({error : 'Password incorrect'});
-                }else{
-                    db.collection('faces').insert(face, function(err, result){
-                        if (err) { 
-                            res.send({ 'error': JSON.stringify(err) }); 
-                        } else {
-                            console.log("new face: "+new_fid);
-                            res.send({ result : result }); //send back result on success
-                        }
-                    });
-                }
-            })); //do not allow duplicate emails     
-        }); 
+    //______________________________________________Create Faces (Authorized Entrants for lock)___________________________________
+    app.post('/api/createface', upload.any(), (req, res) => {
+        new_fid = Date.now(); //face ID is just current time, since we have no risk of user accounts being created at the same time
+
+        console.log(req.body);
+
+        const face = { //create face var for the database
+            fid : new_fid, 
+            email : req.body.email, //account this face is associated with
+            password : req.body.password,
+            fname : req.body.firstname, //name of new face
+            lname : req.body.lastname,
+            fullaccess : req.body.fullaccess, //does face have unlimited access or is it timed
+            files : req.body.files
+        };
+
+
+
+        console.log('Files:');
+        console.log(req.files[0].path);
+
+        fs.mkdir(__dirname+'/../../uploads/'+face.fid);
+
+        for (let i = 0; i < req.files.length; i += 1) {
+            fs.rename(req.files[i].path, path.dirname(req.files[i].path)+'/'+face.fid+'/'+path.basename(req.files[i].path));
+        }
+
+        //check the fields and return errors if invalid
+        if(face.fid == null)
+            return res.send({'error' : 'Error creating face'});
+        else if(face.email == null)
+            return res.send({'error' : 'email is required'});
+        else if(face.password == null)
+            return res.send({'error' : 'password is required'});
+        else if(face.fname == null)
+            return res.send({'error' : 'First name is required'});
+        else if(face.lname == null)
+            return res.send({'error' : 'Last name is required'});
+        else if(face.fullaccess == null)
+            return res.send({'error' : 'Access Type is required'});
+
+        if(db.collection('users').findOne({email : face.email}, function(err,result){ //find user
+            if(result == null)
+                res.send({error : 'This account does not exist'});
+            else if(result.password != face.password){ //check if password matches
+                res.send({error : 'Password incorrect'});
+            }else{
+                db.collection('faces').insert(face, function(err, result){
+                    if (err) { 
+                        res.send({ 'error': JSON.stringify(err) }); 
+                    } else {
+                        console.log("new face: "+new_fid);
+                        res.send({ result : result }); //send back result on success
+                    }
+                });
+            }
+        })); //do not allow duplicate emails     
+    }); 
 
     //_____________________________________Get Faces (Authorized Entrants for lock)_________________________________________________________
     app.post('/api/getfaces', function(req,res){ //with email and password for authentication
@@ -127,7 +156,6 @@ module.exports = function(app, db){
                             res.send({error : err});
                         }
                         else{
-                            console.log(result);
                             res.send(result);
                         }
                     });
@@ -135,5 +163,30 @@ module.exports = function(app, db){
             }
         });
 
+    });
+
+    app.post('/api/deleteface', function(req,res){
+        const auth = {password : req.body.password, email : req.body.email, fid : req.body.fid};
+
+        db.collection('users').findOne({email : auth.email}, function(err, result){
+            if(result == null){ //check if email is actually in the databse
+                res.send({error : 'No account with this email'});
+            }else{ //make sure password is correct
+                if(auth.password == result.password){
+                    console.log('Authenticated!');
+                    //authenticated properly, now get faces from database
+                    
+                    db.collection('faces').remove({fid : auth.fid}, function(err, result){
+                        if(err){
+                            console.log('Error ' +err);
+                            res.send({error : err});
+                        }
+                        else{
+                            res.send(result);
+                        }
+                    });
+                }
+            }
+        });
     });
 }

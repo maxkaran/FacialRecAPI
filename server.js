@@ -1,9 +1,8 @@
-const express        = require('express');
-const MongoClient    = require('mongodb').MongoClient;
-const bodyParser     = require('body-parser');
-const db             = require('./config/db');
-
-const app            = express();
+const express = require('express');
+const MongoClient = require('mongodb').MongoClient;
+const bodyParser = require('body-parser');
+const db = require('./config/db');
+const app = express();
 
 const port = process.env.PORT || 5000;
 
@@ -22,6 +21,6 @@ MongoClient.connect(db.url, function(err, database){
   
     //start app up
     app.listen(port, function(){
-        console.log("listening on port " + port);
+        console.log("API listening on port " + port);
     });             
 });

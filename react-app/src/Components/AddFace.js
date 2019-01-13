@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Button, FormGroup, FormControl, ControlLabel, Checkbox } from "react-bootstrap";
+import Dropzone from "react-dropzone";
 import "./Login.css";
 import profile from '../Profile';
 
@@ -10,7 +11,8 @@ export default class AddFace extends Component {
         this.state = {
         fname: "",
         lname: "",
-        fullaccess: false
+        fullaccess: false,
+        files: null
         };
     }
 
@@ -19,9 +21,12 @@ export default class AddFace extends Component {
     }
 
     handleChange = event => {
-        this.setState({
-        [event.target.id]: event.target.value
-        });
+        this.setState({ [event.target.id]: event.target.value });
+    }
+
+    addFiles = event => {
+        this.setState({ files: event.target.files });
+        console.log(event.target.files);
     }
 
     handleCheckboxChange = event => {
@@ -30,18 +35,29 @@ export default class AddFace extends Component {
 
     handleSubmit = async event => {
         event.preventDefault();
+
+        const data = new FormData();
+        data.append('email', profile.state.email);
+        data.append('password', profile.state.password);
+        data.append('firstname', this.state.fname);
+        data.append('lastname', this.state.lname);
+        data.append('fullaccess', this.state.fullaccess);
+        
+        for (let i = 0; i < this.state.files.length; i += 1) {
+            data.append('file', this.state.files[i]);
+        }
+
+        console.log(data);
+
         const response = await fetch('/api/createface', { //call API to create user
             method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({email : profile.state.email, password : profile.state.password, firstname : this.state.fname, lastname : this.state.lname, fullaccess: this.state.fullaccess}),
+            body: data
         });
 
         const bodyJSON = JSON.parse(await response.text());
 
         if(bodyJSON.error != null){
-            alert('Failed to create a face');
+            alert(bodyJSON.error);
             console.log(bodyJSON.error)
         }
 
@@ -75,6 +91,16 @@ export default class AddFace extends Component {
                     onChange={this.handleCheckboxChange}>
                     Give Full Access to Lock?
                 </Checkbox>
+            </FormGroup>
+            <FormGroup>
+                <ControlLabel>Upload pictures of the face</ControlLabel>
+                <input
+                type="file"
+                name="selectedFiles"
+                multiple="multiple"
+                accept="image/*" //accept only images
+                onChange={this.addFiles}
+                />
             </FormGroup>
             <Button
                 block

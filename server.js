@@ -20,7 +20,7 @@ MongoClient.connect(db.url, function(err, database){
     require('./app/routes')(app, database);
   
     //start app up
-    app.listen(port, function(){
+    app.listen(port, '0.0.0.0', function(){
         console.log("API listening on port " + port);
     });             
 });

@@ -14,6 +14,7 @@ class Profile {
         //expose functions
         this.signIn = this.signIn.bind(this);
         this.getName = this.getName.bind(this);
+        this.signOut = this.signOut.bind(this);
     }
   
     getName() {

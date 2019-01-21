@@ -79,8 +79,6 @@ module.exports = function(app, db){
     app.post('/api/createface', upload.any(), (req, res) => {
         new_fid = Date.now(); //face ID is just current time, since we have no risk of user accounts being created at the same time
 
-        console.log(req.body);
-
         const face = { //create face var for the database
             fid : new_fid, 
             email : req.body.email, //account this face is associated with
@@ -90,11 +88,6 @@ module.exports = function(app, db){
             fullaccess : req.body.fullaccess, //does face have unlimited access or is it timed
             files : req.body.files
         };
-
-
-
-        console.log('Files:');
-        console.log(req.files[0].path);
 
         fs.mkdir(__dirname+'/../../uploads/'+face.fid);
 
@@ -152,7 +145,6 @@ module.exports = function(app, db){
                     
                     db.collection('faces').find({email : auth.email}).toArray(function(err, result){
                         if(err){
-                            console.log('Error ' +err);
                             res.send({error : err});
                         }
                         else{
@@ -170,15 +162,12 @@ module.exports = function(app, db){
 
         db.collection('users').findOne({email : auth.email}, function(err, result){
             if(result == null){ //check if email is actually in the databse
-                res.send({error : 'No account with this email'});
+                res.send({error : 'This face does not exist'});
             }else{ //make sure password is correct
                 if(auth.password == result.password){
-                    console.log('Authenticated!');
                     //authenticated properly, now get faces from database
-                    
                     db.collection('faces').remove({fid : auth.fid}, function(err, result){
                         if(err){
-                            console.log('Error ' +err);
                             res.send({error : err});
                         }
                         else{
@@ -186,6 +175,62 @@ module.exports = function(app, db){
                         }
                     });
                 }
+            }
+        });
+    });
+
+    app.post('/api/getfaces/:faceID', function(req, res){
+        const auth = {password : req.body.password, email : req.body.email, fid : req.params.faceID};
+
+        db.collection('users').findOne({email : auth.email}, function(err, result){
+            if(result == null){ //check if email is actually in the databse
+                res.send({error : 'No account with this email'});
+            }else{ //make sure password is correct
+                if(auth.password == result.password){
+                    //authenticated properly, now edit face
+                    db.collection('faces').findOne({fid : parseInt(auth.fid)}, function(err, result){
+                            if(err){
+                                res.send({error : err});
+                            }
+                            else{
+                                var picturePaths = new Array();
+                                fs.readdir(__dirname+'/public/uploads/'+auth.fid, (err, files) => {
+                                    files.forEach(file => {
+                                        picturePaths.push('/publics/uploads/'+auth.fid+'/'+file);
+                                    });
+                                    res.send({result: result, pictures: picturePaths});
+                                })
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    app.post('/api/editface/:faceID', function(req, res){
+        const auth = {password : req.body.password, email : req.body.email, fid : req.params.faceID};
+
+        db.collection('users').findOne({email : auth.email}, function(err, result){
+            if(result == null){ //check if email is actually in the databse
+                res.send({error : 'No account with this email'});
+            }else{ //make sure password is correct
+                if(auth.password == result.password){
+                    //authenticated properly, now edit face
+                    db.collection('faces').update({fid : auth.fid}, 
+                        {
+                            fullaccess: req.body.fullaccess,
+                            fname: req.body.firstname,
+                            lname: req.body.lname
+                        },
+                        function(err, result){
+                            if(err){
+                                res.send({error : err});
+                            }
+                            else{
+                                res.send(result);
+                            }
+                        });
+                }   
             }
         });
     });

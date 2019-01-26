@@ -80,3 +80,6 @@ typings/
 
 #ignore cotents in config file to keep database secure
 config/
+
+#ignore picture uploads
+react-app/public/uploads/

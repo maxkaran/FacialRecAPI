@@ -25,8 +25,6 @@ function NavBar() {
                     <NavItem className="NavItem" href="/" onClick={() => {profile.signOut()}}>Sign Out</NavItem>
                 </div>      
             }
-            
-            
         </nav>
     );
 }

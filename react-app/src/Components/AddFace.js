@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Button, FormGroup, FormControl, ControlLabel, Checkbox } from "react-bootstrap";
-import Dropzone from "react-dropzone";
+import Webcam from "react-webcam";
 import "./Login.css";
 import profile from '../Profile';
 
@@ -12,7 +12,8 @@ export default class AddFace extends Component {
         fname: "",
         lname: "",
         fullaccess: false,
-        files: null
+        files: null,
+        base64Images: [],
         };
     }
 
@@ -62,7 +63,18 @@ export default class AddFace extends Component {
         }
 
         this.props.history.push('/account');
-  }
+    }
+
+    setRef = Webcam => {
+        this.Webcam = Webcam;
+    };
+    
+    capture = () => {
+        const imageSrc = this.Webcam.getScreenshot();
+        this.state.base64Images.push(imageSrc); //add taken picture
+        this.setState({base64Images: this.state.base64Images});
+        console.log("Image Saved");
+    };
 
     render() {
         return (
@@ -111,6 +123,27 @@ export default class AddFace extends Component {
                 Create Face
             </Button>
             </form>
+            <div style={
+                {display: 'block',
+                'margin-left':'30%'}
+            }>
+                <Webcam
+                    audio = {false}
+                    ref={this.setRef}
+                />
+                <br></br>
+                <button onClick={this.capture}>Capture photo</button>
+            </div>
+            <div style={
+                {display: 'block',
+                'margin-left':'30%'}
+            }>
+            {
+                this.state.base64Images.map(base64 =>(
+                    <img src={`${base64}`}/>
+                ))
+            }
+            </div>
         </div>
         );
     }

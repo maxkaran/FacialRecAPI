@@ -39,7 +39,7 @@ export default class Question extends Component {
                 <p>Pictures</p>
                 {
                 this.state.pictures.map((answer) => (
-                    <img src = {answer}></img>
+                    <img src={answer} style={{width:'50%'}}/>
                 ))
                 }
             </div>

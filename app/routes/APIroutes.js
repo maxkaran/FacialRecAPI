@@ -5,7 +5,7 @@ module.exports = function(app, db){
     const multer = require('multer');
     const storage = multer.diskStorage({
         destination: (req, file, cb) => {
-          cb(null, __dirname+'/../../uploads/');
+          cb(null, __dirname+'/../../react-app/public/uploads/');
         },
         filename: (req, file, cb) => {
           const newFilename = `${Date.now()}${path.extname(file.originalname)}`;
@@ -89,7 +89,7 @@ module.exports = function(app, db){
             files : req.body.files
         };
 
-        fs.mkdir(__dirname+'/../../uploads/'+face.fid);
+        fs.mkdir(__dirname+'/../../react-app/public/uploads/'+face.fid);
 
         for (let i = 0; i < req.files.length; i += 1) {
             fs.rename(req.files[i].path, path.dirname(req.files[i].path)+'/'+face.fid+'/'+path.basename(req.files[i].path));
@@ -194,9 +194,9 @@ module.exports = function(app, db){
                             }
                             else{
                                 var picturePaths = new Array();
-                                fs.readdir(__dirname+'/public/uploads/'+auth.fid, (err, files) => {
+                                fs.readdir(__dirname+'/../../react-app/public/uploads/'+auth.fid, (err, files) => {
                                     files.forEach(file => {
-                                        picturePaths.push('/publics/uploads/'+auth.fid+'/'+file);
+                                        picturePaths.push('/uploads/'+auth.fid+'/'+file);
                                     });
                                     res.send({result: result, pictures: picturePaths});
                                 })

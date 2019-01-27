@@ -18,11 +18,11 @@ class Profile {
     }
   
     getName() {
-      return this.state.firstname+' '+this.state.lastname;
+        return this.state.firstname+' '+this.state.lastname;
     }
   
     getUID() {
-      return this.uid;
+        return this.uid;
     }
 
     loggedIn(){
@@ -38,26 +38,26 @@ class Profile {
             body: JSON.stringify({email : email, password : password})
         });
 
-          const result = JSON.parse(await response.text());
+        const result = JSON.parse(await response.text());
 
-            if(result.error == null){ //if no error, modify state of profile class
-                this.state.authenticated = true;
-                this.state.uid = result.uid;
-                this.state.email = result.email;
-                this.state.firstname = result.fname;
-                this.state.lastname = result.lname;
-                this.state.password = result.password;
-                
-                //save in session storage
-                sessionStorage.setItem('authenticated', JSON.stringify(this.state.authenticated));
-                sessionStorage.setItem('uid', JSON.stringify(this.state.uid));
-                sessionStorage.setItem('email', JSON.stringify(this.state.email));
-                sessionStorage.setItem('firstname', JSON.stringify(this.state.firstname));
-                sessionStorage.setItem('lastname', JSON.stringify(this.state.lastname));
-                sessionStorage.setItem('password', JSON.stringify(this.state.password));
-            }
+        if(result.error == null){ //if no error, modify state of profile class
+            this.state.authenticated = true;
+            this.state.uid = result.uid;
+            this.state.email = result.email;
+            this.state.firstname = result.fname;
+            this.state.lastname = result.lname;
+            this.state.password = result.password;
+            
+            //save in session storage
+            sessionStorage.setItem('authenticated', JSON.stringify(this.state.authenticated));
+            sessionStorage.setItem('uid', JSON.stringify(this.state.uid));
+            sessionStorage.setItem('email', JSON.stringify(this.state.email));
+            sessionStorage.setItem('firstname', JSON.stringify(this.state.firstname));
+            sessionStorage.setItem('lastname', JSON.stringify(this.state.lastname));
+            sessionStorage.setItem('password', JSON.stringify(this.state.password));
+        }
 
-          console.log(this.state);
+        console.log(this.state);
     }
   
   

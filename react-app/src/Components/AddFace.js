@@ -12,7 +12,7 @@ export default class AddFace extends Component {
         fname: "",
         lname: "",
         fullaccess: false,
-        files: null,
+        files: [],
         base64Images: [],
         };
     }
@@ -43,6 +43,7 @@ export default class AddFace extends Component {
         data.append('firstname', this.state.fname);
         data.append('lastname', this.state.lname);
         data.append('fullaccess', this.state.fullaccess);
+        data.append('base64images', JSON.stringify(this.state.base64Images));
         
         for (let i = 0; i < this.state.files.length; i += 1) {
             data.append('file', this.state.files[i]);
@@ -73,7 +74,6 @@ export default class AddFace extends Component {
         const imageSrc = this.Webcam.getScreenshot();
         this.state.base64Images.push(imageSrc); //add taken picture
         this.setState({base64Images: this.state.base64Images});
-        console.log("Image Saved");
     };
 
     render() {
@@ -130,6 +130,7 @@ export default class AddFace extends Component {
                 <Webcam
                     audio = {false}
                     ref={this.setRef}
+                    screenshotFormat='image/jpeg'
                 />
                 <br></br>
                 <button onClick={this.capture}>Capture photo</button>

@@ -2,6 +2,8 @@ module.exports = function(app, db){
 
     const path = require('path');
     const fs = require('fs');
+    var rimraf = require("rimraf");
+
     const multer = require('multer');
     const storage = multer.diskStorage({
         destination: (req, file, cb) => {
@@ -86,13 +88,30 @@ module.exports = function(app, db){
             fname : req.body.firstname, //name of new face
             lname : req.body.lastname,
             fullaccess : req.body.fullaccess, //does face have unlimited access or is it timed
-            files : req.body.files
+            files : req.body.files,
         };
+
+        const base64images = JSON.parse(req.body.base64images)
+
 
         fs.mkdir(__dirname+'/../../react-app/public/uploads/'+face.fid);
 
         for (let i = 0; i < req.files.length; i += 1) {
             fs.rename(req.files[i].path, path.dirname(req.files[i].path)+'/'+face.fid+'/'+path.basename(req.files[i].path));
+        }
+
+        for(let i=0; i<base64images.length; i+= 1){
+            console.log(i);
+            console.log(__dirname+'/../../react-app/public/uploads/'+face.fid+'/'+Date.now()+'.jpeg');
+            var data = Buffer.from(base64images[i].replace(/^data:image\/(png|gif|jpeg);base64,/,''), 'base64');
+            fs.writeFile(__dirname+'/../../react-app/public/uploads/'+face.fid+'/'+Date.now().toString()+'.jpeg', data, function(err){
+                console.log(__dirname+'/../../react-app/public/uploads/'+face.fid+'/'+Date.now()+'.jpeg');
+
+                if(err){
+                    console.log(err);
+                    return res.send({'error' : 'Error saving files'});
+                }
+            });
         }
 
         //check the fields and return errors if invalid
@@ -166,11 +185,12 @@ module.exports = function(app, db){
             }else{ //make sure password is correct
                 if(auth.password == result.password){
                     //authenticated properly, now get faces from database
-                    db.collection('faces').remove({fid : auth.fid}, function(err, result){
+                    db.collection('faces').remove({fid : parseInt(auth.fid)}, function(err, result){
                         if(err){
                             res.send({error : err});
                         }
                         else{
+                            rimraf.sync(__dirname+'/../../react-app/public/uploads/'+auth.fid+'/'); //delete directory with photos
                             res.send(result);
                         }
                     });

@@ -51,7 +51,7 @@ export default class Account extends Component {
             }
             {
 
-                this.state.faces && this.state.faces.map(faces => (
+                Array.isArray(this.state.faces) && this.state.faces.map(faces => (
                     <div key={faces.fid} className="col-sm-12 col-md-4 col-lg-3">
                     <Link to={`/faces/${faces.fid}`}>
                         <div className="card text-white bg-success mb-3">

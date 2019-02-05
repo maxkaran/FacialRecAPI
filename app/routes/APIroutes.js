@@ -25,7 +25,8 @@ module.exports = function(app, db){
             fname : req.body.firstname, 
             lname : req.body.lastname, 
             email : req.body.email, 
-            password : req.body.password 
+            password : req.body.password,
+            updated : true,
         };
 
         //check the fields and return errors if invalid
@@ -138,6 +139,8 @@ module.exports = function(app, db){
                     if (err) { 
                         res.send({ 'error': JSON.stringify(err) }); 
                     } else {
+                        
+                        db.collection('users').update({email: face.email}, {$set:{updated: true}});
                         console.log("new face: "+new_fid);
                         res.send({ result : result }); //send back result on success
                     }
@@ -185,15 +188,20 @@ module.exports = function(app, db){
             }else{ //make sure password is correct
                 if(auth.password == result.password){
                     //authenticated properly, now get faces from database
-                    db.collection('faces').remove({fid : parseInt(auth.fid)}, function(err, result){
-                        if(err){
-                            res.send({error : err});
-                        }
-                        else{
-                            rimraf.sync(__dirname+'/../../react-app/public/uploads/'+auth.fid+'/'); //delete directory with photos
-                            res.send(result);
-                        }
-                    });
+                    db.collection('users').update({email: auth.email}, {$set:{updated: true}}, function(err, result){
+                        if(err)
+                            return res.send({error: 'Failed to delete account'});
+
+                        db.collection('faces').remove({fid : parseInt(auth.fid)}, function(err, result){
+                            if(err){
+                                res.send({error : err});
+                            }
+                            else{
+                                rimraf.sync(__dirname+'/../../react-app/public/uploads/'+auth.fid+'/'); //delete directory with photos
+                                res.send(result);
+                            }
+                        });
+                    })
                 }
             }
         });
@@ -237,11 +245,11 @@ module.exports = function(app, db){
                 if(auth.password == result.password){
                     //authenticated properly, now edit face
                     db.collection('faces').update({fid : auth.fid}, 
-                        {
+                        {$set:{
                             fullaccess: req.body.fullaccess,
                             fname: req.body.firstname,
                             lname: req.body.lname
-                        },
+                        }},
                         function(err, result){
                             if(err){
                                 res.send({error : err});
@@ -249,8 +257,66 @@ module.exports = function(app, db){
                             else{
                                 res.send(result);
                             }
-                        });
+                        }
+                    );
                 }   
+            }
+        });
+    });
+
+    app.post('/api/isupdated', function(req, res){
+        console.log('isupdated');
+        const email = req.body.email;
+        db.collection('users').findOne({email: email}, function(err, result){
+            if(err || result==null)
+                return res.send({error: 'Problem checking account'});
+            else{
+                return res.send({updated: result.updated});
+            }
+
+        });
+    });
+
+    app.post('/api/update', function(req, res){
+        const auth = {email: req.body.email, password: req.body.password};
+
+        db.collection('users').findOne({email : auth.email}, function(err, result){
+            if(result == null){ //check if email is actually in the databse
+                res.send({error : 'No account with this email'});
+            }else{ //make sure password is correct
+                if(auth.password == result.password){
+                    //once authenticated, find faces associated with this email
+                    db.collection('faces').find({email : auth.email}).toArray(function(err, faces_result){
+                        var return_faces = [];
+                        for(let face of faces_result) {
+                            files = fs.readdirSync(__dirname+'/../../react-app/public/uploads/'+face.fid); 
+                            
+                            var new_face = {
+                                fullaccess : face.fullaccess,
+                                fid : face.fid,
+                                fname : face.fname,
+                                lname : face.lname,
+                                faces : []
+                            };
+
+                            for(let file of files) {
+                                const image = fs.readFileSync(__dirname+'/../../react-app/public/uploads/'+face.fid+'/'+file); //read binary file data
+                                new_face.faces.push(new Buffer(image).toString('base64')); //append the base64 encoded image
+                            }
+
+                            //add this face to return_faces
+                            return_faces.push(new_face);
+                        }
+                        res.send(return_faces); //return to sender folks
+                        
+                        //now we have to update the database
+                        db.collection('users').update({email: result.email}, {$set:{updated: false}}, function(err, result){
+                            if(err){
+                                console.log('error updating: '+err);
+                            }
+                        });
+                    });
+                }
             }
         });
     });
